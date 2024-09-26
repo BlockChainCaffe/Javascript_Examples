@@ -9,6 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "pako": "^2.1.0"
+    "lz-string": "^1.5.0",
+    "pako": "^2.1.0",
+    "zlib": "^1.0.5"
   }
 }

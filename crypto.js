@@ -7,8 +7,8 @@
  */
 
 //Checking the crypto module
-const crypto = require('crypto');
-const pako   = require('pako')
+const crypto = require('crypto')
+const zlib = require('zlib');
 
 
 const algorithm = 'aes-256-cbc'; //Using AES encryption
@@ -176,45 +176,40 @@ if (output !== input) {
 // ----------------------------------------------------------------------------
 // Test 2: JSON (it's just another UTF8 text)
 input = {
-	"id": "0001",
-	"type": "donut",
-	"name": "Cake",
-	"image":
-		{
-			"url": "images/0001.jpg",
-			"width": 200,
-			"height": 200
-		},
-	"thumbnail":
-		{
-			"url": "images/thumbnails/0001.jpg",
-			"width": 32,
-			"height": 32
-		}
+    "isbn":"9781491943533",
+    "baddies" : "🚀❌#à§ù",
+    "title":"Practical Modern JavaScript",
+    "subtitle":"Dive into ES6 and the Future of JavaScript",
+    "author":"Nicolás Bevacqua",
+    "published":"2017-07-16T00:00:00.000Z",
+    "publisher":"O'Reilly Media",
+    "pages":334,
+    "description":"To get the most out of modern JavaScript, you need learn the latest features of its parent specification, ECMAScript 6 (ES6). This book provides a highly practical look at ES6, without getting lost in the specification or its implementation details.",
+    "website":"https://github.com/mjavascript/practical-modern-javascript"
 }
 encrypted = encrypt(algorithm, key_buff, iv_buff, JSON.stringify(input))
 decrypted = decrypt(algorithm, key_buff, iv_buff, encrypted)
 output = buffer_to_utf8(decrypted)
 output = JSON.parse(output)
-if (input.image.height !== output.image.height) {
+if (input.author !== output.author) {
     throw ("JSON test failed")
 }
 
 // ----------------------------------------------------------------------------
 // Test 3: JSON -> string -> compressed (Uint8Array) -> encrypt/decript -> inflate
 
-stringed = JSON.stringify(input)                                    // JSON -> String 
-deflated = pako.deflate(stringed)                                   // String -> compressed Uint8Array
-deflated = Buffer.from(deflated)                                    // Uint8Array -> Buffer (opional)                               
-encrypted = encrypt(algorithm, key_buff, iv_buff, deflated)         // Buffer -> Encrypted Buffer
-decrypted = decrypt(algorithm, key_buff, iv_buff, encrypted)        // Encrypted Buffer -> compressed buffer
-inflated = pako.inflate(decrypted)                                  // compressed Buffer -> decompressed Uint8Array  
-inflated = Buffer.from(inflated)                                    // decompressed Uint8Array -> decompressed Buffer
-inflated = inflated.toString('ascii')                               // decompressed Buffer -> String
-output = JSON.parse(inflated)                                       // String -> JSON
-if (input.image.height !== output.image.height) {
+stringed = JSON.stringify(input)                                   // JSON -> String
+deflated = zlib.gzipSync(stringed)                                  // String -> (compressed) Buff
+encrypted = encrypt(algorithm, key_buff, iv_buff, deflated)         // (compressed) Buffer -> Encrypted Buffer
+decrypted = decrypt(algorithm, key_buff, iv_buff, encrypted)        // Encrypted Buffer -> (compressed) Buffer
+inflated = zlib.unzipSync(deflated)                                 // (compressed) Buff -> Buff
+inflated = inflated.toString()                                      // Buff -> String
+output   = JSON.parse(inflated)                                     // String -> JSON
+
+if (input.baddies !== output.baddies) {
     throw ("JSON test failed")
 }
+
 
 console.log(stringed.length)                                        // 173 bytes
 console.log(deflated.length)                                        // 111  bytes
