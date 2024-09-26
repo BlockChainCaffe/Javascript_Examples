@@ -196,9 +196,9 @@ if (input.author !== output.author) {
 }
 
 // ----------------------------------------------------------------------------
-// Test 3: JSON -> string -> compressed (Uint8Array) -> encrypt/decript -> inflate
+// Test 3: JSON -> string -> compressed -> encrypt/decript -> inflate -> string -> JSOn
 
-stringed = JSON.stringify(input)                                   // JSON -> String
+stringed = JSON.stringify(input)                                    // JSON -> String
 deflated = zlib.gzipSync(stringed)                                  // String -> (compressed) Buff
 encrypted = encrypt(algorithm, key_buff, iv_buff, deflated)         // (compressed) Buffer -> Encrypted Buffer
 decrypted = decrypt(algorithm, key_buff, iv_buff, encrypted)        // Encrypted Buffer -> (compressed) Buffer
